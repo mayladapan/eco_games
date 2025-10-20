@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Eco Games</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    body {
+      font-family: 'Prompt', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      text-align: center;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    /* Main Menu Styles */
+    #mainMenu {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #d4fc79, #96e6a1);
+      padding: 20px;
+    }
+
+    #mainMenu h1 {
+      width: 100%;
+      margin-bottom: 50px;
+    }
+
+    .games-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      max-width: 1000px;
+    }
+
+    .game-card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      width: 250px;
+      height: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .game-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .game-card-icon {
+      width: 180px;
+      height: 180px;
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 100px;
+      margin-bottom: 15px;
+    }
+
+    .game-card-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      text-align: center;
+    }
+
+    /* Lobby Styles */
+    .lobby {
+      height: 100vh;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #ffecd2, #fcb69f);
+    }
+
+    #lobbyPlastic { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+    #lobbyAir { background: linear-gradient(135deg, #a8d8ff, #87ceeb); }
+
+    .startBtn {
+      padding: 15px 40px;
+      font-size: 24px;
+      border: none;
+      border-radius: 10px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-family: 'Prompt', sans-serif;
+    }
+    .startBtn:hover { background-color: #388e3c; }
+
+    /* Game Area Styles */
+    .game-area { display: none; padding: 20px; min-height: 100vh; overflow-y: auto; }
+    #gameTrash { 
+      background: url("img_trash/bg_game.jpg") no-repeat center center; 
+      background-size: cover;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 10px;
+    }
+    #gamePlastic { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); }
+    #gameAir { background: linear-gradient(135deg, #87ceeb, #e0f6ff); position: relative; overflow: hidden; }
+
+    h1 {
+      color: #4CAF50;
+      background-color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    #mainMenu h1 {
+      color: #4CAF50;
+      background-color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      color: #000000;
+      background-color: white;
+      padding: 10px 10px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .score { font-size: 20px; margin: 10px; }
+    .score.updated { animation: pop 0.4s ease; }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.4); color: #4CAF50; }
+      100% { transform: scale(1); color: black; }
+    }
+
+    .bins, .trash-items {
+      display: flex; justify-content: center; gap: 20px; margin: 15px 0; flex-wrap: wrap;
+    }
+
+    .bin, .trash {
+      width: 100px; height: 100px; border: 2px dashed #aaa; border-radius: 10px;
+      padding: 10px; background-color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 40px;
+      touch-action: none;
+    }
+
+    .bin-img { 
+      width: 450px; 
+      height: 450px; 
+      object-fit: contain; }
+
+    .bin {
+      width: 240px; height: auto; border: none; background-color: transparent;
+      display: flex; flex-direction: column; align-items: center; cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    
+    .bin.dragover .bin-img, 
+    .bin.touch-over .bin-img { 
+      transform: scale(1.1) translateY(-5px);
+    }
+
+    .trash-img { width: 80px; height: 80px; object-fit: contain; pointer-events: none; }
+    
+    .trash.dragging {
+      opacity: 0.5;
+      transform: scale(1.2);
+      z-index: 1000;
+      position: fixed;
+    }
+
+    /* Plastic Game Styles */
+    #situationBox { background-color: white; padding: 20px; margin: 20px auto; border-radius: 15px; max-width: 600px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+    #situationText { font-size: 22px; color: #333; margin-bottom: 10px; }
+
+    .choices { display: flex; justify-content: center; gap: 20px; margin: 30px 0; flex-wrap: wrap; }
+    .choice {
+      background-color: white; border: 3px solid #4CAF50; border-radius: 15px; padding: 20px; width: 200px;
+      cursor: pointer; transition: all 0.3s ease; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    .choice:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.25); }
+    .choice-emoji { font-size: 60px; margin-bottom: 10px; }
+    .choice-label { font-size: 18px; color: #333; font-weight: bold; }
+    .choice.correct { animation: correctAnim 0.6s ease; border-color: #4CAF50; }
+    .choice.wrong { animation: wrongAnim 0.6s ease; border-color: #f44336; }
+    @keyframes correctAnim { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); background-color: #c8e6c9; } }
+    @keyframes wrongAnim { 0%, 100% { transform: scale(1); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); background-color: #ffcdd2; } }
+
+    .feedback { margin: 20px auto; padding: 15px; max-width: 500px; border-radius: 10px; font-size: 18px; display: none; }
+    .feedback.show { display: block; animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .feedback.correct { background-color: #c8e6c9; color: #2e7d32; }
+    .feedback.wrong { background-color: #ffcdd2; color: #c62828; }
+
+    .choice-img { width: 80px; height: 80px; object-fit: contain; pointer-events: none; display:block; margin: 0 auto 10px; }
+
+    .backBtn {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      width: 50px;
+      height: 50px;
+      border: none;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #333;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Prompt', sans-serif;
+      z-index: 100;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .backBtn:hover { 
+      background-color: #fff;
+      transform: scale(1.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+
+    /* Air Defender Game Canvas */
+    #airDefenderContainer {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      height: 600px;
+      margin: 20px auto;
+      border: 3px solid #87ceeb;
+      border-radius: 15px;
+      background-image: url("img_bubble/bubblebg.png");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      background-color: #ffffff;
+      overflow: hidden;
+      cursor: crosshair;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      touch-action: none;
+    }
+
+    .air-game-info {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .air-game-info div {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .pollution-cloud {
+      position: absolute;
+      background: radial-gradient(circle, rgba(100,100,100,0.7), rgba(60,60,60,0.9));
+      border-radius: 50%;
+      opacity: 0.8;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .bubble {
+      position: absolute;
+      background: radial-gradient(circle at 30% 30%, rgba(200,230,255,0.9), rgba(100,200,255,0.5));
+      border-radius: 50%;
+      border: 2px solid rgba(100,180,255,0.6);
+      box-shadow: inset -2px -2px 5px rgba(0,0,0,0.1), 0 0 15px rgba(100,200,255,0.6);
+      pointer-events: none;
+    }
+
+    .gun-base {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      user-select: none;
+      pointer-events: none;
+      width: 120px;
+      height: 140px;
+    }
+
+    .kid-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .level-info {
+      position: absolute;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      display: none;
+      z-index: 50;
+    }
+
+    /* Rules Popup */
+    #rulesPopup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .rules-content {
+      background: linear-gradient(135deg, #a8d8ff, #87ceeb);
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .rules-content h2 {
+      margin-top: 0;
+      color: #fff;
+      font-size: 28px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .rules-content p {
+      color: #333;
+      font-size: 16px;
+      line-height: 1.8;
+      margin: 15px 0;
+      text-align: left;
+    }
+
+    .rules-emoji {
+      font-size: 24px;
+      margin: 10px 0;
+    }
+
+    .rules-btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Prompt', sans-serif;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    .rules-btn:hover {
+      background-color: #388e3c;
+      transform: scale(1.05);
+    }
+
+    /* Popup */
+    .popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 999; }
+    .popup-content { background: #fff; padding: 30px; border-radius: 15px; text-align: center; width: 300px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    
+    /* Settings Popup */
+    #settingsPopup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; }
+    .settings-content { background: #fff; padding: 40px; border-radius: 20px; text-align: center; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+    .settings-content h2 { margin-top: 0; color: #333; }
+    .settings-btn { 
+      padding: 15px 30px; 
+      margin: 10px 0; 
+      font-size: 18px; 
+      border: none; 
+      border-radius: 10px; 
+      cursor: pointer; 
+      transition: all 0.3s ease;
+      font-family: 'Prompt', sans-serif;
+      width: 100%;
+      font-weight: bold;
+    }
+    .settings-btn.menu { background-color: #ff5722; color: white; }
+    .settings-btn.menu:hover { background-color: #e64a19; transform: scale(1.05); }
+    .settings-btn.continue { background-color: #4CAF50; color: white; }
+    .settings-btn.continue:hover { background-color: #388e3c; transform: scale(1.05); }
+    .settings-btn.close { background-color: #757575; color: white; }
+    .settings-btn.close:hover { background-color: #616161; transform: scale(1.05); }
+
+    @media screen and (max-width: 768px) {
+      .game-card {
+        width: 180px;
+        height: 240px;
+        padding: 20px;
+      }
+
+      .game-card-icon {
+        width: 140px;
+        height: 140px;
+        font-size: 70px;
+      }
+
+      .game-card-title {
+        font-size: 16px;
+      }
+
+      h1 {
+        font-size: 16px;
+        padding: 8px 12px;
+      }
+
+      h2 {
+        font-size: 14px;
+        padding: 6px 8px;
+        margin: 5px 0;
+      }
+
+      .startBtn {
+        padding: 12px 30px;
+        font-size: 18px;
+      }
+
+      .score {
+        font-size: 16px;
+        margin: 5px;
+      }
+
+      .bins {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        max-width: 500px;
+        margin: 10px auto;
+        padding: 10px;
+      }
+
+      .bin {
+        width: 100%;
+        max-width: 220px;
+        height: auto;
+        margin: 0 auto;
+      }
+
+      .bin-img {
+        width: 100%;
+        height: auto;
+        max-height: 200px;
+      }
+
+      .trash-items {
+        gap: 8px;
+        margin: 8px 0;
+      }
+
+      .trash {
+        width: 60px;
+        height: 60px;
+        padding: 5px;
+      }
+
+      .trash-img {
+        width: 50px;
+        height: 50px;
+      }
+
+      #situationBox {
+        padding: 15px;
+        margin: 15px 10px;
+      }
+
+      #situationText {
+        font-size: 18px;
+      }
+
+      .choices {
+        gap: 15px;
+        margin: 20px 10px;
+      }
+
+      .choice {
+        width: 150px;
+        padding: 15px;
+      }
+
+      .choice-emoji {
+        font-size: 50px;
+      }
+
+      .choice-img {
+        width: 60px;
+        height: 60px;
+      }
+
+      .choice-label {
+        font-size: 16px;
+      }
+
+      #airDefenderContainer {
+        height: 450px;
+        max-width: 95%;
+        margin: 10px auto;
+      }
+
+      .backBtn {
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+        top: 10px;
+        right: 10px;
+      }
+
+      .popup-content {
+        width: 85%;
+        max-width: 300px;
+        padding: 25px;
+      }
+
+      .settings-content {
+        width: 85%;
+        max-width: 320px;
+        padding: 30px 20px;
+      }
+
+      .settings-btn {
+        font-size: 16px;
+        padding: 12px 20px;
+      }
+
+      .game-area {
+        padding: 5px;
+      }
+
+      #gameTrash {
+        padding: 5px;
+      }
+
+      .gun-base {
+        width: 100px;
+        height: 120px;
+      }
+
+      .rules-content {
+        width: 90%;
+        padding: 30px 20px;
+      }
+
+      .rules-content h2 {
+        font-size: 22px;
+      }
+
+      .rules-content p {
+        font-size: 14px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      #mainMenu h1 {
+        font-size: 18px;
+        margin-bottom: 30px;
+      }
+
+      .games-container {
+        gap: 20px;
+      }
+
+      .game-card {
+        width: 140px;
+        height: 200px;
+        padding: 15px;
+      }
+
+      .game-card-icon {
+        width: 110px;
+        height: 110px;
+        font-size: 50px;
+      }
+
+      .game-card-title {
+        font-size: 14px;
+      }
+
+      h1 {
+        font-size: 14px;
+        padding: 6px 10px;
+      }
+
+      h2 {
+        font-size: 12px;
+        padding: 5px 8px;
+      }
+
+      .startBtn {
+        font-size: 16px;
+        padding: 10px 25px;
+      }
+
+      .bins {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        max-width: 380px;
+        margin: 8px auto;
+        padding: 8px;
+      }
+
+      .bin {
+        width: 100%;
+        max-width: 170px;
+        height: auto;
+        margin: 0 auto;
+      }
+
+      .bin-img {
+        width: 100%;
+        height: auto;
+        max-height: 160px;
+      }
+
+      .trash-items {
+        gap: 6px;
+        margin: 5px 0;
+      }
+
+      .trash {
+        width: 55px;
+        height: 55px;
+      }
+
+      .trash-img {
+        width: 45px;
+        height: 45px;
+      }
+
+      #situationBox {
+        padding: 12px;
+        margin: 10px 5px;
+      }
+
+      #situationText {
+        font-size: 16px;
+      }
+
+      .choices {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .choice {
+        width: 180px;
+      }
+
+      #airDefenderContainer {
+        height: 400px;
+        max-width: 98%;
+      }
+
+      .air-game-info {
+        padding: 8px;
+      }
+
+      .air-game-info div {
+        font-size: 14px;
+      }
+
+      .gun-base {
+        width: 90px;
+        height: 110px;
+      }
+
+      .factory {
+        font-size: 40px;
+      }
+
+      .tree {
+        font-size: 40px;
+      }
+
+      .level-info {
+        font-size: 16px;
+        padding: 12px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main Menu -->
+  <div id="mainMenu">
+    <h1>🌍 เลือกเกมที่คุณอยากเล่น 🌍</h1>
+    
+    <div class="games-container">
+      <!-- Game 1: Trash -->
+      <div class="game-card" data-game="trash" onclick="selectGame('trash')">
+        <div class="game-card-icon" id="icon-trash">
+          <img src="img_trash/binicon.png" alt="เกมแยกขยะ" style="width: 100%; height: 100%; object-fit: contain; border-radius: 15px;">
+        </div>
+        <div class="game-card-title">🗑️ เกมแยกขยะ</div>
+      </div>
+
+      <!-- Game 2: Plastic -->
+      <div class="game-card" data-game="plastic" onclick="selectGame('plastic')">
+        <div class="game-card-icon" id="icon-plastic">
+          <img src="img_plastic/plasicon.png" alt="เกมลดใช้พลาสติก" style="width: 100%; height: 100%; object-fit: contain; border-radius: 15px;">
+        </div>
+        <div class="game-card-title">🌱 เกมลดใช้พลาสติก</div>
+      </div>
+
+      <!-- Game 3: Air Defender -->
+      <div class="game-card" data-game="air" onclick="selectGame('air')">
+        <div class="game-card-icon" id="icon-air">
+          <img src="img_bubble/airicon.png" alt="Air Defender" style="width: 100%; height: 100%; object-fit: contain; border-radius: 15px;">
+        </div>
+        <div class="game-card-title">💨 เกมผู้พิทักษ์อากาศ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lobby Trash -->
+  <div id="lobbyTrash" class="lobby">
+    <button class="backBtn" onclick="openSettings()" title="ตั้งค่า">⚙️</button>
+    <img src="img_trash/Trash game.png" width="50%" alt="เกมแยกขยะ">
+    <button class="startBtn" data-game="trash">เริ่มเล่น</button>
+  </div>
+
+  <!-- Lobby Plastic -->
+  <div id="lobbyPlastic" class="lobby">
+    <button class="backBtn" onclick="openSettings()" title="ตั้งค่า">⚙️</button>
+    <h1>🌱 เกมลดใช้พลาสติก</h1>
+    <p style="font-size: 18px; color: #555;">เลือกสิ่งของที่เป็นมิตรกับสิ่งแวดล้อม</p>
+    <button class="startBtn" data-game="plastic">เริ่มเล่น</button>
+  </div>
+
+  <!-- Lobby Air Defender -->
+  <div id="lobbyAir" class="lobby">
+    <button class="backBtn" onclick="openSettings()" title="ตั้งค่า">⚙️</button>
+    <h1>💨เกมผู้พิทักษ์อากาศ</h1>
+    <p style="font-size: 18px; color: #555;">ยิงฟองสบู่เพื่อขจัดมลพิษและสะอาดท้องฟ้า!</p>
+    <button class="startBtn" data-game="air">เริ่มเล่น</button>
+  </div>
+
+  <!-- Game Trash -->
+  <div id="gameTrash" class="game-area">
+    <button class="backBtn" onclick="openSettings()" title="ตั้งค่า">⚙️</button>
+    <h1>♻️ เกมแยกขยะให้ถูก! ♻️</h1>
+    <div class="score">คะแนน: <span id="scoreTrash">0</span></div>
+
+    <h2>🗑️ ถังขยะ</h2>
+    <div class="bins">
+      <div class="bin" data-type="รีไซเคิล"><img src="img_trash/bin_recycle.png" class="bin-img" alt="ถังรีไซเคิล"></div>
+      <div class="bin" data-type="อันตราย"><img src="img_trash/bin_hazard.png" class="bin-img" alt="ถังขยะอันตราย"></div>
+      <div class="bin" data-type="เปียก"><img src="img_trash/bin_wet.png" class="bin-img" alt="ถังขยะเปียก"></div>
+      <div class="bin" data-type="ทั่วไป"><img src="img_trash/bin_general.png" class="bin-img" alt="ถังขยะทั่วไป"></div>
+    </div>
+
+    <h2>ขยะที่จะลากไปใส่ถัง</h2>
+    <div class="trash-items">
+      <div class="trash" draggable="true" data-type="รีไซเคิล"><img src="img_trash/bottle.png" alt="ขวดพลาสติก" class="trash-img"></div>
+      <div class="trash" draggable="true" data-type="อันตราย"><img src="img_trash/battery.png" alt="ถ่านไฟฉาย" class="trash-img"></div>
+      <div class="trash" draggable="true" data-type="เปียก"><img src="img_trash/banana.png" alt="กล้วย" class="trash-img"></div>
+      <div class="trash" draggable="true" data-type="ทั่วไป"><img src="img_trash/tissue.png" alt="ทิชชู่" class="trash-img"></div>
+      <div class="trash" draggable="true" data-type="เปียก"><img src="img_trash/orange.png" alt="ส้ม" class="trash-img"></div>
+      <div class="trash" draggable="true" data-type="ทั่วไป"><img src="img_trash/snack.png" alt="ขนม" class="trash-img"></div>
+    </div>
+  </div>
+
+  <!-- Game Plastic -->
+  <div id="gamePlastic" class="game-area">
+    <button class="backBtn" onclick="openSettings()" title="ตั้งค่า">⚙️</button>
+    <h1>🌱 เกมลดใช้พลาสติก 🌱</h1>
+    <div class="score">คะแนน: <span id="scorePlastic">0</span></div>
+
+    <div id="situationBox">
+      <div id="situationText">กำลังโหลด...</div>
+    </div>
+
+    <div class="choices" id="choicesContainer"></div>
+
+    <div id="feedback" class="feedback"></div>
+  </div>
+
+  <!-- Game Air Defender -->
+  <div id="gameAir" class="game-area">
+    <button class="backBtn" onclick="openSettings()" title="ตั้งค่า">⚙️</button>
+    <h1>💨 ผู้พิทักษ์อากาศ 💨</h1>
+    
+    <div id="airDefenderContainer">
+      <div class="air-game-info">
+        <div>คะแนน: <span id="scoreAir">0</span></div>
+        <div>เวลา: <span id="timeAir">60</span>s</div>
+        <div>ด่าน: <span id="levelAir">1</span></div>
+      </div>
+
+      <div class="level-info" id="levelInfo"></div>
+      
+      <div class="gun-base" id="gunBase">
+        <img src="img_bubble/kid.png" alt="ตัวละคร" id="kidImg" style="width: 100%; height: 100%; object-fit: contain;">
+      </div>
+    </div>
+
+    <p style="margin-top: 15px; font-size: 16px; color: #333; text-align: center;">
+      <strong>คลิกเพื่อยิงฟองสบู่ ขจัดเมฆมลพิษ!</strong>
+    </p>
+  </div>
+
+  <!-- เสียงเอฟเฟกต์ -->
+  <audio id="correctSound" src="sound/correct.mp3" preload="auto"></audio>
+  <audio id="wrongSound" src="sound/wrong.mp3" preload="auto"></audio>
+  <audio id="bubblePopSound" src="sound/bubble pop.mp3" preload="auto"></audio>
+
+  <!-- Popup -->
+  <div id="popup" class="popup">
+    <div class="popup-content">
+      <h2>สรุปคะแนน 🎉</h2>
+      <p>คุณได้คะแนน: <span id="finalScore">0</span></p>
+      <button id="restartBtn">เล่นใหม่</button>
+    </div>
+  </div>
+
+  <!-- Settings Popup -->
+  <div id="settingsPopup">
+    <div class="settings-content">
+      <h2>⚙️ ตั้งค่า</h2>
+      <button class="settings-btn menu" onclick="goBackToMenu()">🏠 กลับสู่เมนูหลัก</button>
+      <button class="settings-btn continue" onclick="closeSettings()">▶️ เล่นต่อ</button>
+      <button class="settings-btn close" onclick="closeSettings()">✖️ ปิด</button>
+    </div>
+  </div>
+
+  <!-- Rules Popup for Air Defender -->
+  <div id="rulesPopup">
+    <div class="rules-content">
+      <h2>💨 ผู้พิทักษ์อากาศ 💨</h2>
+      
+      <div class="rules-emoji">🌫️💀</div>
+      <p>
+        ก้อนฟองอากาศสีดำกำลังยึดครองท้องฟ้า! พวกมันคือ "มลพิษอันชั่วร้าย" ที่ชอบทำให้เมืองหม่นหมอง และทำให้ต้นไม้ป่วย 🌳
+      </p>
+
+      <p style="font-weight: bold; color: #2e7d32;">แต่ไม่ต้องกลัว! ถึงเวลาที่เหล่าฮีโร่ตัวน้อยจะออกโรงแล้ว! 🦸‍♀️🦸‍♂️</p>
+
+      <p>
+        ใช้พลัง "ฟองอากาศสะอาด" ของหนู ๆ ยิงขึ้นไปกำจัดเมฆพิษให้หมดจากท้องฟ้า! ทุกครั้งที่ฟองสะอาดโดนเมฆดำ เมฆจะหายไป… และท้องฟ้าจะกลับมาสดใสอีกครั้ง! ☀️💨
+      </p>
+
+      <p style="margin-top: 25px; font-weight: bold; font-size: 18px;">
+        ⏱️ เวลา 60 วินาที | 🎯 ยิงให้โดนเมฆ | 📈 ขึ้นด่านเรื่อย ๆ
+      </p>
+
+      <button class="rules-btn" onclick="closeRulesPopup()">🚀 เริ่มเล่นเลย!</button>
+    </div>
+  </div>
+
+  <script>
+    const mainMenu = document.getElementById("mainMenu");
+    const lobbyTrash = document.getElementById("lobbyTrash");
+    const lobbyPlastic = document.getElementById("lobbyPlastic");
+    const lobbyAir = document.getElementById("lobbyAir");
+    const gameTrash = document.getElementById("gameTrash");
+    const gamePlastic = document.getElementById("gamePlastic");
+    const gameAir = document.getElementById("gameAir");
+
+    const correctSound = document.getElementById("correctSound");
+    const wrongSound = document.getElementById("wrongSound");
+    const bubblePopSound = document.getElementById("bubblePopSound");
+
+    // ปุ่มเริ่มเล่น
+    document.querySelectorAll(".startBtn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const game = btn.dataset.game;
+        if (game === "trash") {
+          lobbyTrash.style.display = "none";
+          gameTrash.style.display = "flex";
+        } else if (game === "plastic") {
+          lobbyPlastic.style.display = "none";
+          gamePlastic.style.display = "block";
+          startPlasticGame();
+        } else if (game === "air") {
+          lobbyAir.style.display = "none";
+          gameAir.style.display = "block";
+          document.getElementById('rulesPopup').style.display = 'flex';
+          document.getElementById('rulesPopup').style.zIndex = '2000';
+        }
+      });
+    });
+
+    // เลือกเกมจากการ์ด Main Menu
+    window.selectGame = function(game) {
+      mainMenu.style.display = "none";
+      if (game === "trash") {
+        lobbyTrash.style.display = "flex";
+      } else if (game === "plastic") {
+        lobbyPlastic.style.display = "flex";
+      } else if (game === "air") {
+        lobbyAir.style.display = "flex";
+      }
+    };
+
+    // ========== เกมแยกขยะ ==========
+    const bins = document.querySelectorAll('.bin');
+    const scoreTrashEl = document.getElementById('scoreTrash');
+    let scoreTrash = 0;
+    let draggedElement = null;
+    let touchedElement = null;
+    let touchClone = null;
+
+    function setupTrash() {
+      const trashes = document.querySelectorAll('.trash');
+      trashes.forEach(trash => {
+        // Mouse events
+        trash.removeEventListener('dragstart', handleDragStart);
+        trash.removeEventListener('dragend', handleDragEnd);
+        trash.addEventListener('dragstart', handleDragStart);
+        trash.addEventListener('dragend', handleDragEnd);
+
+        // Touch events
+        trash.removeEventListener('touchstart', handleTouchStart);
+        trash.removeEventListener('touchmove', handleTouchMove);
+        trash.removeEventListener('touchend', handleTouchEnd);
+        trash.addEventListener('touchstart', handleTouchStart, { passive: false });
+        trash.addEventListener('touchmove', handleTouchMove, { passive: false });
+        trash.addEventListener('touchend', handleTouchEnd, { passive: false });
+      });
+    }
+
+    function handleDragStart(e) {
+      draggedElement = this;
+      e.dataTransfer.setData('text/plain', this.dataset.type);
+    }
+
+    function handleDragEnd(e) {
+      draggedElement = null;
+    }
+
+    // Touch handlers
+    function handleTouchStart(e) {
+      e.preventDefault();
+      touchedElement = this;
+      
+      // สร้าง clone สำหรับแสดงขณะลาก
+      touchClone = this.cloneNode(true);
+      touchClone.style.position = 'fixed';
+      touchClone.style.zIndex = '9999';
+      touchClone.style.opacity = '0.8';
+      touchClone.style.pointerEvents = 'none';
+      touchClone.style.width = this.offsetWidth + 'px';
+      touchClone.style.height = this.offsetHeight + 'px';
+      
+      const touch = e.touches[0];
+      touchClone.style.left = (touch.clientX - this.offsetWidth / 2) + 'px';
+      touchClone.style.top = (touch.clientY - this.offsetHeight / 2) + 'px';
+      
+      document.body.appendChild(touchClone);
+      this.style.opacity = '0.3';
+    }
+
+    function handleTouchMove(e) {
+      e.preventDefault();
+      if (!touchClone || !touchedElement) return;
+
+      const touch = e.touches[0];
+      touchClone.style.left = (touch.clientX - touchClone.offsetWidth / 2) + 'px';
+      touchClone.style.top = (touch.clientY - touchClone.offsetHeight / 2) + 'px';
+
+      // ตรวจสอบว่าอยู่เหนือถังขยะไหน
+      bins.forEach(bin => {
+        bin.classList.remove('touch-over');
+        const rect = bin.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          bin.classList.add('touch-over');
+        }
+      });
+    }
+
+    function handleTouchEnd(e) {
+      e.preventDefault();
+      if (!touchedElement) return;
+
+      const touch = e.changedTouches[0];
+      let droppedOnBin = null;
+
+      // หาว่าปล่อยบนถังไหน
+      bins.forEach(bin => {
+        const rect = bin.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          droppedOnBin = bin;
+        }
+        bin.classList.remove('touch-over');
+      });
+
+      if (droppedOnBin) {
+        const trashType = touchedElement.dataset.type;
+        const binType = droppedOnBin.dataset.type;
+
+        if (trashType === binType) {
+          scoreTrash++;
+          if (correctSound) correctSound.play();
+          touchedElement.remove();
+        } else {
+          scoreTrash = Math.max(0, scoreTrash - 1);
+          if (wrongSound) wrongSound.play();
+          touchedElement.remove();
+        }
+
+        scoreTrashEl.textContent = scoreTrash;
+        scoreTrashEl.parentElement.classList.add('updated');
+        setTimeout(() => scoreTrashEl.parentElement.classList.remove('updated'), 400);
+
+        // ตรวจสอบว่าขยะหมดหรือยัง
+        setTimeout(() => {
+          if (document.querySelectorAll('.trash').length === 0) {
+            showPopup(scoreTrash);
+          }
+        }, 100);
+      } else {
+        touchedElement.style.opacity = '1';
+      }
+
+      if (touchClone) {
+        touchClone.remove();
+        touchClone = null;
+      }
+      touchedElement = null;
+    }
+
+    setupTrash();
+
+    bins.forEach(bin => {
+      bin.addEventListener('dragover', e => {
+        e.preventDefault();
+        bin.classList.add('dragover');
+      });
+
+      bin.addEventListener('dragleave', () => bin.classList.remove('dragover'));
+
+      bin.addEventListener('drop', e => {
+        e.preventDefault();
+        bin.classList.remove('dragover');
+
+        const trashType = e.dataTransfer.getData('text/plain');
+        const binType = bin.dataset.type;
+
+        if (trashType === binType) {
+          scoreTrash++;
+          if (correctSound) correctSound.play();
+          if (draggedElement) draggedElement.remove();
+        } else {
+          scoreTrash = Math.max(0, scoreTrash - 1);
+          if (wrongSound) wrongSound.play();
+          if (draggedElement) draggedElement.remove();
+        }
+
+        draggedElement = null;
+        scoreTrashEl.textContent = scoreTrash;
+        scoreTrashEl.parentElement.classList.add('updated');
+        setTimeout(() => scoreTrashEl.parentElement.classList.remove('updated'), 400);
+
+        // ตรวจสอบว่าขยะหมดหรือยัง
+        setTimeout(() => {
+          if (document.querySelectorAll('.trash').length === 0) {
+            showPopup(scoreTrash);
+          }
+        }, 100);
+      });
+    });
+
+    // ========== เกมลดใช้พลาสติก ==========
+    const situations = [
+      {
+        question: "🥤 คุณกำลังจะซื้อเครื่องดื่ม ควรเลือกอะไรดี?",
+        choices: [
+          { img: "img_plastic/plastic_bottle.png", label: "ขวดพลาสติกใช้ครั้งเดียว", correct: false, feedback: "ขวดพลาสติกสร้างขยะมาก ❌" },
+          { img: "img_plastic/reusable_bottle.png", label: "ขวดน้ำแบบพกพา", correct: true, feedback: "ขวดน้ำแบบพกพาใช้ซ้ำได้ ลดขยะ! ✅" }
+        ]
+      },
+      {
+        question: "🛍️ คุณไปซื้อของที่ตลาด ควรเอาอะไรไป?",
+        choices: [
+          { img: "img_plastic/cloth_bag.png", label: "ถุงผ้า", correct: true, feedback: "ถุงผ้าใช้ได้หลายครั้ง ช่วยลดขยะพลาสติก! ✅" },
+          { img: "img_plastic/plastic_bag.png", label: "ถุงพลาสติก", correct: false, feedback: "ถุงพลาสติกใช้แล้วทิ้ง สร้างขยะเยอะ ❌" }
+        ]
+      },
+      {
+        question: "🥢 คุณกำลังจะกินข้าว ควรใช้อะไร?",
+        choices: [
+          { img: "img_plastic/metal_spoon.png", label: "ช้อนโลหะ", correct: true, feedback: "ช้อนโลหะล้างใช้ซ้ำได้ ลดขยะพลาสติก! ✅" },
+          { img: "img_plastic/plastic_spoon.png", label: "ช้อนพลาสติกใช้ครั้งเดียว", correct: false, feedback: "ช้อนพลาสติกใช้แล้วทิ้ง ไม่ดีต่อสิ่งแวดล้อม ❌" }
+        ]
+      },
+      {
+        question: "🥤 คุณสั่งน้ำปั่น ควรขออะไร?",
+        choices: [
+          { img: "img_plastic/straw_plastic.png", label: "หลอดพลาสติก", correct: false, feedback: "หลอดพลาสติกสร้างขยะมาก ❌" },
+          { img: "img_plastic/straw_metal.png", label: "ไม่ใช้หลอด หรือใช้หลอดสแตนเลส", correct: true, feedback: "ไม่ใช้หลอดหรือใช้หลอดสแตนเลสดีกว่า! ✅" }
+        ]
+      },
+      {
+        question: "🍱 คุณจะซื้อข้าวกล่องกลับบ้าน ควรทำอย่างไร?",
+        choices: [
+          { img: "img_plastic/foam_box.png", label: "ใช้กล่องโฟม", correct: false, feedback: "กล่องโฟมย่อยสลายยาก ไม่ดีต่อสิ่งแวดล้อม ❌" },
+          { img: "img_plastic/tiffin.png", label: "เอาปิ่นโตไปใส่", correct: true, feedback: "ใช้ปิ่นโตของตัวเอง ลดขยะได้เยอะ! ✅" }
+        ]
+      }
+    ];
+
+    const scorePlasticEl = document.getElementById('scorePlastic');
+    const situationText = document.getElementById('situationText');
+    const choicesContainer = document.getElementById('choicesContainer');
+    const feedbackEl = document.getElementById('feedback');
+    let scorePlastic = 0;
+    let currentQuestion = 0;
+
+    function startPlasticGame() {
+      scorePlastic = 0;
+      currentQuestion = 0;
+      scorePlasticEl.textContent = scorePlastic;
+      showQuestion();
+    }
+
+    function showQuestion() {
+      if (currentQuestion >= situations.length) {
+        showPopup(scorePlastic);
+        return;
+      }
+
+      const situation = situations[currentQuestion];
+      situationText.textContent = situation.question;
+      choicesContainer.innerHTML = '';
+      feedbackEl.classList.remove('show');
+
+      situation.choices.forEach((choice, index) => {
+        const choiceEl = document.createElement('div');
+        choiceEl.className = 'choice';
+        choiceEl.innerHTML = `
+          <img src="${choice.img}" alt="${choice.label}" class="choice-img">
+          <div class="choice-label">${choice.label}</div>
+        `;
+        choiceEl.addEventListener('click', () => handleChoice(choice, choiceEl));
+        choicesContainer.appendChild(choiceEl);
+      });
+    }
+
+    function handleChoice(choice, choiceEl) {
+      document.querySelectorAll('.choice').forEach(el => { el.style.pointerEvents = 'none'; });
+
+      if (choice.correct) {
+        scorePlastic++;
+        if (correctSound) correctSound.play();
+        choiceEl.classList.add('correct');
+        feedbackEl.className = 'feedback correct show';
+      } else {
+        scorePlastic = Math.max(0, scorePlastic - 1);
+        if (wrongSound) wrongSound.play();
+        choiceEl.classList.add('wrong');
+        feedbackEl.className = 'feedback wrong show';
+      }
+
+      feedbackEl.textContent = choice.feedback;
+      scorePlasticEl.textContent = scorePlastic;
+      scorePlasticEl.parentElement.classList.add('updated');
+      setTimeout(() => scorePlasticEl.parentElement.classList.remove('updated'), 400);
+
+      setTimeout(() => {
+        currentQuestion++;
+        showQuestion();
+      }, 1500);
+    }
+
+    // ========== เกม Air Defender ==========
+    let airGameActive = false;
+    let airGamePaused = false;
+    let scoreAir = 0;
+    let levelAir = 1;
+    let timeAir = 60;
+    let cloudsDestroyed = 0;
+    let cloudTargetPerLevel = 5;
+    let gameSpeed = 1;
+    let spawnRate = 800;
+    let timeInterval;
+    let spawnInterval;
+    let pausedClouds = [];
+
+    const container = document.getElementById('airDefenderContainer');
+    const scoreAirEl = document.getElementById('scoreAir');
+    const timeAirEl = document.getElementById('timeAir');
+    const levelAirEl = document.getElementById('levelAir');
+    const levelInfo = document.getElementById('levelInfo');
+    const kidImg = document.getElementById('kidImg');
+    const gunBase = document.getElementById('gunBase');
+
+    function startAirDefenderGame() {
+      airGameActive = true;
+      airGamePaused = false;
+      scoreAir = 0;
+      levelAir = 1;
+      timeAir = 60;
+      cloudsDestroyed = 0;
+      cloudTargetPerLevel = 5;
+      gameSpeed = 1;
+      spawnRate = 800;
+
+      updateAirDisplay();
+      startAirGameLoop();
+    }
+
+    function updateAirDisplay() {
+      scoreAirEl.textContent = scoreAir;
+      timeAirEl.textContent = timeAir;
+      levelAirEl.textContent = levelAir;
+    }
+
+    function startAirGameLoop() {
+      clearInterval(timeInterval);
+      clearInterval(spawnInterval);
+
+      timeInterval = setInterval(() => {
+        if (!airGamePaused) 
+        timeAir--;
+        updateAirDisplay();
+
+        if (timeAir <= 0) {
+          endAirGame();
+        }
+      }, 1000);
+
+      spawnInterval = setInterval(() => {
+        if (airGameActive && !airGamePaused) spawnPollutionCloud();
+      }, spawnRate);
+
+      spawnPollutionCloud();
+    }
+
+    function spawnPollutionCloud() {
+      if (!airGameActive || airGamePaused) return;
+
+      const cloud = document.createElement('div');
+      cloud.className = 'pollution-cloud';
+      
+      const size = 40 + Math.random() * 40;
+      cloud.style.width = size + 'px';
+      cloud.style.height = size + 'px';
+      
+      const x = Math.random() * (container.offsetWidth - size);
+      cloud.style.left = x + 'px';
+      cloud.style.top = '-50px';
+
+      const speed = (2 + Math.random() * 2) * gameSpeed;
+      let top = -50;
+
+      const moveCloud = setInterval(() => {
+        if (airGamePaused) {
+        return; 
+       }
+        top += speed;
+        cloud.style.top = top + 'px';
+
+        if (top > container.offsetHeight) {
+          clearInterval(moveCloud);
+          cloud.remove();
+        }
+      }, 30);
+
+      const handleCloudClick = (e) => {
+        if (airGamePaused) return;
+
+        e.stopPropagation();
+        clearInterval(moveCloud);
+        cloud.remove();
+        createBubbleExplosion(x + size / 2, top + size / 2);
+        scoreAir++;
+        cloudsDestroyed++;
+        updateAirDisplay();
+        if (bubblePopSound) {
+          bubblePopSound.currentTime = 0;
+          bubblePopSound.play();
+        }
+
+        if (cloudsDestroyed >= cloudTargetPerLevel) {
+          nextAirLevel();
+        }
+      };
+
+      cloud.addEventListener('click', handleCloudClick);
+      cloud.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        handleCloudClick(e);
+      }, { passive: false });
+
+      container.appendChild(cloud);
+    }
+
+    function createBubbleExplosion(x, y) {
+      for (let i = 0; i < 3; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        
+        const bubbleSize = 15 + Math.random() * 20;
+        bubble.style.width = bubbleSize + 'px';
+        bubble.style.height = bubbleSize + 'px';
+        bubble.style.left = x + 'px';
+        bubble.style.top = y + 'px';
+
+        const angle = (Math.PI * 2 / 3) * i;
+        const velocity = 3 + Math.random() * 2;
+        let vx = Math.cos(angle) * velocity;
+        let vy = Math.sin(angle) * velocity - 2;
+        let bubbleX = x;
+        let bubbleY = y;
+        let life = 60;
+
+        const bubbleAnim = setInterval(() => {
+          bubbleX += vx;
+          bubbleY += vy;
+          vy += 0.1;
+          life--;
+
+          bubble.style.left = bubbleX + 'px';
+          bubble.style.top = bubbleY + 'px';
+          bubble.style.opacity = life / 60;
+
+          if (life <= 0) {
+            clearInterval(bubbleAnim);
+            bubble.remove();
+          }
+        }, 30);
+
+        container.appendChild(bubble);
+      }
+    }
+
+    function nextAirLevel() {
+      airGameActive = false;
+      clearInterval(timeInterval);
+      clearInterval(spawnInterval);
+
+      levelAir++;
+      cloudsDestroyed = 0;
+      cloudTargetPerLevel += 2;
+      gameSpeed += 0.3;
+      spawnRate = Math.max(400, spawnRate - 100);
+
+      levelInfo.textContent = `✨ ด่านที่ ${levelAir}! ยิงฟองสบู่ ${cloudTargetPerLevel} ลูก ✨`;
+      levelInfo.style.display = 'block';
+
+      setTimeout(() => {
+        levelInfo.style.display = 'none';
+        airGameActive = true;
+        startAirGameLoop();
+      }, 2000);
+    }
+
+    function endAirGame() {
+      airGameActive = false;
+      clearInterval(timeInterval);
+      clearInterval(spawnInterval);
+      
+      document.querySelectorAll('.pollution-cloud').forEach(el => el.remove());
+      document.querySelectorAll('.bubble').forEach(el => el.remove());
+
+      setTimeout(() => showPopup(scoreAir), 500);
+    }
+
+    container.addEventListener('click', (e) => {
+       if (!airGamePaused) {
+        createGunEffect(e.clientX, e.clientY);
+      }
+    });
+
+    // Touch support for Air Defender
+    container.addEventListener('touchstart', (e) => {
+      if (!airGamePaused) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        createGunEffect(touch.clientX, touch.clientY);
+      }
+    }, { passive: false });
+
+    function createGunEffect(x, y) {
+      // เพิ่มเอฟเฟกต์ยิงฟองสบู่
+      const rect = container.getBoundingClientRect();
+      const bubbleStart = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height - 30
+      };
+      
+      const angle = Math.atan2(y - bubbleStart.y, x - bubbleStart.x);
+      
+      // เปลี่ยนท่าเด็กตามทิศทางการยิง (มี transition smooth)
+      let newSrc = 'img_bubble/kid.png';
+      
+      if (x < bubbleStart.x - 100) {
+        // ยิงไปทางซ้ายชัดเจน
+        newSrc = 'img_bubble/kidleft.png';
+      } else if (x > bubbleStart.x + 100) {
+        // ยิงไปทางขวาชัดเจน
+        newSrc = 'img_bubble/kidright.png';
+      } else {
+        // ยิงตรง
+        newSrc = 'img_bubble/kid.png';
+      }
+      
+      if (kidImg.src !== newSrc && !kidImg.src.includes(newSrc)) {
+        kidImg.style.transition = 'opacity 0.2s ease';
+        kidImg.style.opacity = '0.7';
+        setTimeout(() => {
+          kidImg.src = newSrc;
+          kidImg.style.opacity = '1';
+        }, 100);
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      
+      const bubbleSize = 12;
+      bubble.style.width = bubbleSize + 'px';
+      bubble.style.height = bubbleSize + 'px';
+      bubble.style.left = (bubbleStart.x - rect.left) + 'px';
+      bubble.style.top = (bubbleStart.y - rect.top) + 'px';
+
+      const speed = 8;
+      let bx = bubbleStart.x - rect.left;
+      let by = bubbleStart.y - rect.top;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+      let life = 100;
+
+      const bubbleMove = setInterval(() => {
+        bx += vx;
+        by += vy;
+        life--;
+
+        bubble.style.left = bx + 'px';
+        bubble.style.top = by + 'px';
+        bubble.style.opacity = life / 100;
+
+        if (life <= 0 || bx < 0 || bx > rect.width || by < 0) {
+          clearInterval(bubbleMove);
+          bubble.remove();
+        }
+      }, 30);
+
+      container.appendChild(bubble);
+    }
+
+    // ========== Popup ==========
+    const popup = document.getElementById("popup");
+    const finalScore = document.getElementById("finalScore");
+    const restartBtn = document.getElementById("restartBtn");
+
+    function showPopup(score) {
+      finalScore.textContent = score;
+      popup.style.display = "flex";
+    }
+
+    restartBtn.addEventListener("click", () => {
+      window.location.reload();
+    });
+
+    // ========== ฟังก์ชันกลับเมนูหลัก ==========
+    function goBackToMenu() {
+      document.getElementById('settingsPopup').style.display = 'none';
+      
+      lobbyTrash.style.display = "none";
+      lobbyPlastic.style.display = "none";
+      lobbyAir.style.display = "none";
+      gameTrash.style.display = "none";
+      gamePlastic.style.display = "none";
+      gameAir.style.display = "none";
+      
+      mainMenu.style.display = "flex";
+      
+      scoreTrash = 0;
+      scorePlastic = 0;
+      scoreAir = 0;
+      scoreTrashEl.textContent = scoreTrash;
+      scorePlasticEl.textContent = scorePlastic;
+      scoreAirEl.textContent = scoreAir;
+      currentQuestion = 0;
+      
+      airGameActive = false;
+      airGamePaused = false; 
+      clearInterval(timeInterval);
+      clearInterval(spawnInterval);
+      
+      document.querySelectorAll('.pollution-cloud').forEach(el => el.remove());
+      document.querySelectorAll('.bubble').forEach(el => el.remove());
+      
+      popup.style.display = "none";
+    }
+
+    // ========== ฟังก์ชัน Settings Popup ==========
+    function openSettings() {
+  document.getElementById('settingsPopup').style.display = 'flex';
+  
+  // ⭐ เพิ่มส่วนนี้ทั้งหมด
+  if (airGameActive && gameAir.style.display === 'block') {
+    airGamePaused = true;
+    
+    pausedClouds = [];
+    document.querySelectorAll('.pollution-cloud').forEach(cloud => {
+      pausedClouds.push({
+        element: cloud,
+        top: parseFloat(cloud.style.top),
+        left: parseFloat(cloud.style.left)
+      });
+    });
+  }
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsPopup').style.display = 'none';
+    }
+
+    // ========== ฟังก์ชัน Rules Popup ==========
+    function closeRulesPopup() {
+      document.getElementById('rulesPopup').style.display = 'none';
+       if (airGamePaused && airGameActive) {
+    airGamePaused = false;
+    pausedClouds = [];
+  }
+
+      startAirDefenderGame();
+    }
+  </script>
+</body>
+</html>
